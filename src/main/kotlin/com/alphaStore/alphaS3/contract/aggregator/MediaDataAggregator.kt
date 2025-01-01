@@ -50,7 +50,7 @@ class MediaDataAggregator(
     ): AggregatorResponse<Long>{
         val databaseAccessLogId = UUID.randomUUID().toString()
         val resultFromDb =
-            mediaDataRepo.findCountWithOutOffsetIdAndDate(
+            mediaDataRepo.findCountWithOutOffsetDateAndLimit(
                 mediaName = mediaName,
                 mediaType = mediaType,
                 ownerId = ownerId,
@@ -67,7 +67,7 @@ class MediaDataAggregator(
     ): AggregatorListResponse<MediaDataMinifiedImpl>{
         val databaseAccessLogId = UUID.randomUUID().toString()
         val resultFromDb =
-            mediaDataRepo.findDataWithOutOffsetIdAndDate(
+            mediaDataRepo.findDataWithOutOffsetDateAndLimit(
                 mediaName = mediaName,
                 mediaType = mediaType,
                 ownerId = ownerId,
@@ -101,8 +101,7 @@ class MediaDataAggregator(
                 mediaType = mediaType,
                 ownerId = ownerId,
                 microServiceName = microServiceName,
-                limit = limit,
-                offsetDate = offsetDate
+                limit = limit
             ).map{ toMap->
                 MediaDataMinifiedImpl(
                     mediaName = toMap.mediaName,
@@ -123,7 +122,6 @@ class MediaDataAggregator(
         ownerId: String,
         microServiceName: String,
         limit: Int,
-        offsetDate: ZonedDateTime,
         offsetId: String
     ): AggregatorListResponse<MediaDataMinifiedImpl>{
         val databaseAccessLogId = UUID.randomUUID().toString()
@@ -134,7 +132,6 @@ class MediaDataAggregator(
                 ownerId = ownerId,
                 microServiceName = microServiceName,
                 limit = limit,
-                offsetDate = offsetDate,
                 offsetId = offsetId
             ).map{ toMap->
                 MediaDataMinifiedImpl(

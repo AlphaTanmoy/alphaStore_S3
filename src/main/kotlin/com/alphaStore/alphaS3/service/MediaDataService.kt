@@ -6,6 +6,7 @@ import com.alphaStore.alphaS3.utils.DateUtil
 import com.alphaStore.alphaS3.contract.EncodingUtilContract
 import com.alphaStore.alphaS3.contract.EncryptionMasterContract
 import com.alphaStore.alphaS3.contract.aggregator.MediaDataAggregator
+import com.alphaStore.alphaS3.entity.MediaData
 import com.alphaStore.alphaS3.enums.DateRangeType
 import com.alphaStore.alphaS3.error.BadRequestException
 import com.alphaStore.alphaS3.reqres.FilterOption
@@ -21,7 +22,10 @@ class MediaDataService (
     private val encryptionMaster: EncryptionMasterContract,
     private val dateUtilContract: DateUtil,
 ){
-    
+    fun saveMediaData(mediaData: MediaData): MediaData {
+        return mediaDataAggregator.save(mediaData)
+    }
+
     fun getAllImages(
         mediaName: String,
         mediaType: String,
@@ -125,7 +129,6 @@ class MediaDataService (
                             ownerId = ownerId,
                             microServiceName = microServiceName,
                             limit = limit,
-                            offsetDate = offsetDateFinal!!,
                             offsetId = offsetId
                         )
                     val nextPageSize = limit - mediaNextPageWithSameData.data.size

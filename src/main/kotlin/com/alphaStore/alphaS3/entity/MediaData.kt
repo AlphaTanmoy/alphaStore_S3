@@ -7,7 +7,7 @@ import jakarta.persistence.Lob
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "Media_data")
+@Table(name = "media_data")
 data class MediaData(
     @Column(nullable = false)
     var mediaName: String,

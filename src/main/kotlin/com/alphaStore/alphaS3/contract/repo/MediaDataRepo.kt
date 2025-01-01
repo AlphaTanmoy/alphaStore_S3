@@ -28,10 +28,19 @@ interface MediaDataRepo : JpaRepository<MediaData, String> {
     fun findTop1ByOrderByCreatedDateAsc(): List<MediaData>
 
     @Query(
-        value = ""
+        value = "SELECT COUNT(*) FROM media_data " +
+                "WHERE data_status = 'ACTIVE' " +
+                "OR media_name = :mediaName " +
+                "OR LOWER(media_name) LIKE LOWER(:mediaName) " +
+                "OR media_type = :mediaType " +
+                "OR LOWER(media_type) LIKE LOWER(:mediaType) " +
+                "OR owner_id = :ownerId " +
+                "OR LOWER(owner_id) LIKE LOWER(:ownerId) " +
+                "OR micro_service_name = :microServiceName " +
+                "OR LOWER(micro_service_name) LIKE LOWER(:microServiceName) "
         , nativeQuery = true
     )
-    fun findCountWithOutOffsetIdAndDate(
+    fun findCountWithOutOffsetDateAndLimit(
         @Param("mediaName") mediaName: String,
         @Param("mediaType") mediaType: String,
         @Param("ownerId") ownerId: String,
@@ -39,10 +48,19 @@ interface MediaDataRepo : JpaRepository<MediaData, String> {
     ): Long
 
     @Query(
-        value = ""
+        value = "SELECT * FROM media_data " +
+                "WHERE data_status = 'ACTIVE' " +
+                "OR media_name = :mediaName " +
+                "OR LOWER(media_name) LIKE LOWER(:mediaName) " +
+                "OR media_type = :mediaType " +
+                "OR LOWER(media_type) LIKE LOWER(:mediaType) " +
+                "OR owner_id = :ownerId " +
+                "OR LOWER(owner_id) LIKE LOWER(:ownerId) " +
+                "OR micro_service_name = :microServiceName " +
+                "OR LOWER(micro_service_name) LIKE LOWER(:microServiceName) "
         , nativeQuery = true
     )
-    fun findDataWithOutOffsetIdAndDate(
+    fun findDataWithOutOffsetDateAndLimit(
         @Param("mediaName") mediaName: String,
         @Param("mediaType") mediaType: String,
         @Param("ownerId") ownerId: String,
@@ -50,7 +68,19 @@ interface MediaDataRepo : JpaRepository<MediaData, String> {
     ): List<MediaDataMinified>
 
     @Query(
-        value = ""
+        value = "SELECT COUNT(*) FROM media_data " +
+                "WHERE created_date > :zonedDateTime " +
+                "AND data_status = 'ACTIVE' " +
+                "OR media_name = :mediaName " +
+                "OR LOWER(media_name) LIKE LOWER(:mediaName) " +
+                "OR media_type = :mediaType " +
+                "OR LOWER(media_type) LIKE LOWER(:mediaType) " +
+                "OR owner_id = :ownerId " +
+                "OR LOWER(owner_id) LIKE LOWER(:ownerId) " +
+                "OR micro_service_name = :microServiceName " +
+                "OR LOWER(micro_service_name) LIKE LOWER(:microServiceName) " +
+                "ORDER BY created_date ASC,id ASC " +
+                "LIMIT :limit "
         , nativeQuery = true
     )
     fun findDataWithOutOffsetId(
@@ -58,12 +88,23 @@ interface MediaDataRepo : JpaRepository<MediaData, String> {
         @Param("mediaType") mediaType: String,
         @Param("ownerId") ownerId: String,
         @Param("microServiceName") microServiceName: String,
-        @Param("offsetDate") offsetDate: ZonedDateTime,
         @Param("limit") limit: Int
     ): List<MediaDataMinified>
 
     @Query(
-        value = ""
+        value = "SELECT COUNT(*) FROM media_data " +
+                "WHERE data_status = 'ACTIVE' " +
+                "AND id > :offsetId " +
+                "OR media_name = :mediaName " +
+                "OR LOWER(media_name) LIKE LOWER(:mediaName) " +
+                "OR media_type = :mediaType " +
+                "OR LOWER(media_type) LIKE LOWER(:mediaType) " +
+                "OR owner_id = :ownerId " +
+                "OR LOWER(owner_id) LIKE LOWER(:ownerId) " +
+                "OR micro_service_name = :microServiceName " +
+                "OR LOWER(micro_service_name) LIKE LOWER(:microServiceName) " +
+                "ORDER BY created_date ASC,id ASC " +
+                "LIMIT :limit "
         , nativeQuery = true
     )
     fun findDataWithOffsetId(
@@ -71,7 +112,6 @@ interface MediaDataRepo : JpaRepository<MediaData, String> {
         @Param("mediaType") mediaType: String,
         @Param("ownerId") ownerId: String,
         @Param("microServiceName") microServiceName: String,
-        @Param("offsetDate") offsetDate: ZonedDateTime,
         @Param("offsetId") offsetId: String,
         @Param("limit") limit: Int
     ): List<MediaDataMinified>
