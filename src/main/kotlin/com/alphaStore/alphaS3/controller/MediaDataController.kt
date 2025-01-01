@@ -3,19 +3,21 @@ package com.alphaStore.alphaS3.controller
 import com.alphaStore.alphaS3.entity.MediaData
 import com.alphaStore.alphaS3.error.BadRequestException
 import com.alphaStore.alphaS3.model.PaginationResponse
+import com.alphaStore.alphaS3.model.UploadRequestBody
 import com.alphaStore.alphaS3.model.minifiedImpl.MediaDataMinifiedImpl
 import com.alphaStore.alphaS3.service.MediaDataService
 import com.alphaStore.alphaS3.utils.JwtUtilMaster
 import com.alphaStore.config_server.KeywordsAndConstants.HEADER_AUTHORIZATION
 import com.alphaStore.alphaS3.reqres.FilterOption
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.net.URLDecoder
 
 @RestController
-@RequestMapping("/images")
+@RequestMapping("/alphaS3")
 class MediaDataController (
     private val mediaDataService: MediaDataService,
     private val jwtUtilMaster: JwtUtilMaster
@@ -23,29 +25,35 @@ class MediaDataController (
 
     @PostMapping("/upload")
     fun uploadMediaData(
-        @RequestParam("mediaName") mediaName: String,
-        @RequestParam("mediaType") mediaType: String,
-        @RequestParam("imageData") imageData: MultipartFile,
-        @RequestParam("requestedFromMicroService") requestedFromMicroService: String,
-        @RequestParam(value = "purpose", required = false) purpose: String?
+        @RequestBody imageData: MultipartFile
     ): ResponseEntity<MediaData> {
 
-        val finalPurpose = if(purpose.isNullOrEmpty()) "upload" else purpose
+        if (imageData.isEmpty) {
+            throw BadRequestException("Provide Image Data")
+        }
 
-        val mediaData = MediaData(
-            mediaName = mediaName,
-            mediaType = mediaType,
-            imageData = imageData.bytes,
-            requestedFromMicroService = requestedFromMicroService,
-            purpose = finalPurpose
-        )
+        // Create MediaData object from the uploaded file and other details
+        val mediaData = imageData.contentType?.let {
+            MediaData(
+                mediaName = imageData.originalFilename ?: "Unnamed",
+                mediaType = imageData.contentType.toString(),
+                imageData = imageData.bytes,
+                requestedFromMicroService = "requestedFromMicroService",
+                purpose = "Upload"  // You can adjust the purpose as needed
+            )
+        }
 
-        // Save the MediaData object in the database
-        val savedMediaData = mediaDataService.saveMediaData(mediaData)
+        // Save the media data
+        val savedMediaData = mediaData?.let { mediaDataService.saveMediaData(it) }
 
-        // Return the saved MediaData object as a response
-        return ResponseEntity.ok(savedMediaData)
+        // Return the saved media data in the response
+        return if (savedMediaData != null) {
+            ResponseEntity.ok(savedMediaData)
+        } else {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)
+        }
     }
+
 
 
     @GetMapping("/getAll")
