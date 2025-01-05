@@ -26,6 +26,18 @@ class MediaDataService (
         return mediaDataAggregator.save(mediaData)
     }
 
+    fun extractFileId(url: String): String? {
+        val regex = Regex("/d/([a-zA-Z0-9_-]+)")
+        val matchResult = regex.find(url)
+        return matchResult?.groups?.get(1)?.value
+    }
+
+
+    fun findByDriveId(driveId: String) : String{
+        return mediaDataAggregator.findByDriveId(driveId)
+    }
+
+
     fun getAllImages(
         mediaName: String,
         mediaType: String,

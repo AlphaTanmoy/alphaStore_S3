@@ -1,19 +1,19 @@
 package com.alphaStore.alphaS3.controller
 
 import com.alphaStore.alphaS3.entity.MediaData
+import com.alphaStore.alphaS3.enums.MediaExtentions
+import com.alphaStore.alphaS3.enums.MediaType
 import com.alphaStore.alphaS3.error.BadRequestException
 import com.alphaStore.alphaS3.model.PaginationResponse
-import com.alphaStore.alphaS3.model.UploadRequestBody
 import com.alphaStore.alphaS3.model.minifiedImpl.MediaDataMinifiedImpl
 import com.alphaStore.alphaS3.service.MediaDataService
 import com.alphaStore.alphaS3.utils.JwtUtilMaster
 import com.alphaStore.config_server.KeywordsAndConstants.HEADER_AUTHORIZATION
 import com.alphaStore.alphaS3.reqres.FilterOption
+import com.alphaStore.alphaS3.reqres.ReturnList
+import com.alphaStore.alphaS3.reqres.TempList
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import java.net.URLDecoder
 
 @RestController
@@ -25,33 +25,41 @@ class MediaDataController (
 
     @PostMapping("/upload")
     fun uploadMediaData(
-        @RequestBody imageData: MultipartFile
-    ): ResponseEntity<MediaData> {
+        @RequestBody getImageRequest: TempList
+    ): ArrayList<ReturnList> {
 
-        if (imageData.isEmpty) {
-            throw BadRequestException("Provide Image Data")
-        }
+        val returnData : ArrayList<ReturnList> = arrayListOf()
 
-        // Create MediaData object from the uploaded file and other details
-        val mediaData = imageData.contentType?.let {
-            MediaData(
-                mediaName = imageData.originalFilename ?: "Unnamed",
-                mediaType = imageData.contentType.toString(),
-                imageData = imageData.bytes,
-                requestedFromMicroService = "requestedFromMicroService",
-                purpose = "Upload"  // You can adjust the purpose as needed
+        getImageRequest.items.forEach{
+            if (it.imageLink.isEmpty()) {
+                throw BadRequestException("Provide Image Link")
+            }
+
+            val getFileId = mediaDataService.extractFileId(it.imageLink);
+
+            val imageData = MediaData(
+                actualName = it.name,
+                mediaExtentions = MediaExtentions.PNG,
+                mediaType = MediaType.IMAGE,
+                imageData = it.imageLink,
+                requestedFromMicroService = it.microServiceName,
+                driveId = getFileId!!
             )
-        }
 
-        // Save the media data
-        val savedMediaData = mediaData?.let { mediaDataService.saveMediaData(it) }
+            mediaDataService.saveMediaData(imageData)
 
-        // Return the saved media data in the response
-        return if (savedMediaData != null) {
-            ResponseEntity.ok(savedMediaData)
-        } else {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)
+            val id = mediaDataService.findByDriveId(getFileId)
+            print("ID: $id")
+
+            returnData.add(
+                ReturnList(
+                    name = it.name,
+                    data = it.imageLink
+                )
+            )
+
         }
+        return returnData
     }
 
 

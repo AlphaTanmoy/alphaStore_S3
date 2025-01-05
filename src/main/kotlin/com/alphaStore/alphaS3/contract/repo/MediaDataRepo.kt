@@ -19,6 +19,13 @@ interface MediaDataRepo : JpaRepository<MediaData, String> {
     fun findByName(@Param("name") name: String): List<MediaDataMinified>
 
     @Query(
+        value = "SELECT * from media_data " +
+                "WHERE drive_id = :driveId"
+        , nativeQuery = true
+    )
+    fun findByDriveId(@Param("driveId") driveId: String) : List<MediaData>
+
+    @Query(
         value = "SELECT * " +
                 "FROM media_data " +
                 "ORDER BY created_date ASC " +

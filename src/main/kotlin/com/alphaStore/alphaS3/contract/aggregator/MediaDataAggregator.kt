@@ -2,6 +2,7 @@ package com.alphaStore.alphaS3.contract.aggregator
 
 import com.alphaStore.alphaS3.contract.repo.MediaDataRepo
 import com.alphaStore.alphaS3.entity.MediaData
+import com.alphaStore.alphaS3.error.BadRequestException
 import com.alphaStore.alphaS3.model.minifiedImpl.FetchMostRecentMinifiedImpl
 import org.springframework.stereotype.Component
 import com.alphaStore.alphaS3.reqres.AggregatorListResponse
@@ -14,6 +15,12 @@ import java.util.*
 class MediaDataAggregator(
     private val mediaDataRepo: MediaDataRepo
 ) {
+
+    fun findByDriveId(driveId: String) : String {
+        val driveID = mediaDataRepo.findByDriveId(driveId)
+        if(driveID.size>1 || driveID.isEmpty()) throw BadRequestException("Either the value already present or Duplicate value")
+        return driveID[0].driveId
+    }
 
     fun save(entity: MediaData): MediaData {
         return mediaDataRepo.save(entity)
