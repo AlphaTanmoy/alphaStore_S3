@@ -14,6 +14,8 @@ import com.alphaStore.alphaS3.reqres.ReturnList
 import com.alphaStore.alphaS3.reqres.TempList
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
 import java.net.URLDecoder
 
 @RestController
@@ -22,6 +24,35 @@ class MediaDataController (
     private val mediaDataService: MediaDataService,
     private val jwtUtilMaster: JwtUtilMaster
 ){
+
+    @PostMapping("/test")
+    fun uploadTest(
+        @RequestBody addImage: MultipartFile
+    ){
+        val uploadDirectory = "src/main/resources/static/"
+        var adsImagesString = ""
+
+
+        adsImagesString += mediaDataService.saveImageToStorage(uploadDirectory, addImage) + ","
+
+    }
+
+    /*@GetMapping("/getImages/{adsId}")
+    @Throws(IOException::class)
+    fun getImages(@PathVariable adsId: Long): List<ByteArray> {
+        val imageDirectory = "src/main/resources/static/images/ads"
+
+        val imageNames = advertiserService.getAdsImages(adsId).split(",")
+        val imageBytesList = mutableListOf<ByteArray>()
+
+        for (imageName in imageNames) {
+            val imageBytes = mediaDataService.getImage(imageDirectory, imageName)
+            imageBytes?.let { imageBytesList.add(it) }
+        }
+
+        return imageBytesList
+    }*/
+
 
     @PostMapping("/upload")
     fun uploadMediaData(

@@ -12,8 +12,14 @@ import com.alphaStore.alphaS3.error.BadRequestException
 import com.alphaStore.alphaS3.reqres.FilterOption
 import com.alphaStore.alphaS3.utils.ConverterStringToObjectList
 import org.springframework.stereotype.Component
+import org.springframework.web.multipart.MultipartFile
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.util.UUID
 
 @Component
 class MediaDataService (
@@ -22,6 +28,51 @@ class MediaDataService (
     private val encryptionMaster: EncryptionMasterContract,
     private val dateUtilContract: DateUtil,
 ){
+
+    @Throws(IOException::class)
+    fun saveImageToStorage(uploadDirectory: String, imageFile: MultipartFile): String {
+        val uniqueFileName = "${UUID.randomUUID()}_${imageFile.originalFilename}"
+
+        val uploadPath = Path.of(uploadDirectory)
+        val filePath = uploadPath.resolve(uniqueFileName)
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath)
+        }
+
+        imageFile.inputStream.use { inputStream ->
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        return uniqueFileName
+    }
+
+    // To view an image
+    @Throws(IOException::class)
+    fun getImage(imageDirectory: String, imageName: String): ByteArray? {
+        val imagePath = Path.of(imageDirectory, imageName)
+
+        return if (Files.exists(imagePath)) {
+            Files.readAllBytes(imagePath)
+        } else {
+            null // Handle missing images
+        }
+    }
+
+    // Delete an image
+    @Throws(IOException::class)
+    fun deleteImage(imageDirectory: String, imageName: String): String {
+        val imagePath = Path.of(imageDirectory, imageName)
+
+        return if (Files.exists(imagePath)) {
+            Files.delete(imagePath)
+            "Success"
+        } else {
+            "Failed" // Handle missing images
+        }
+    }
+
+
     fun saveMediaData(mediaData: MediaData): MediaData {
         return mediaDataAggregator.save(mediaData)
     }
